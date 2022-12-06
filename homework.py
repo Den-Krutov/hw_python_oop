@@ -1,30 +1,39 @@
 """The logic of a working fitness tracker for training
 at running, walking, swimming."""
+from typing import Type
+from dataclasses import dataclass
 
 
+@dataclass
 class InfoMessage:
     """Stores data about training."""
 
-    def __init__(self,
-                 training_type: str,
-                 duration: float,
-                 distance: float,
-                 speed: float,
-                 calories: float,
-                 ) -> None:
-        self.training_type = training_type
-        self.duration = duration
-        self.distance = distance
-        self.speed = speed
-        self.calories = calories
+    MESSAGE_PHRASE_NAMES = {'type': 'Тип тренировки',
+                            'duration': 'Длительность',
+                            'distance': 'Дистанция',
+                            'mean_speed': 'Ср. скорость',
+                            'calories': 'Потрачено ккал'}
+    MESSAGE_PHRASE_UNIT_MEASURES = {'h': 'ч',
+                                    'km': 'км'}
+    DEFAULT_FLOAT_VAR = 0
+    training_type: str = "Unknown"
+    duration: float = DEFAULT_FLOAT_VAR
+    distance: float = DEFAULT_FLOAT_VAR
+    speed: float = DEFAULT_FLOAT_VAR
+    calories: float = DEFAULT_FLOAT_VAR
 
     def get_message(self) -> str:
         """Formats the data and return a str."""
-        return (f'Тип тренировки: {self.training_type}; '
-                f'Длительность: {self.duration:.3f} ч.; '
-                f'Дистанция: {self.distance:.3f} км; '
-                f'Ср. скорость: {self.speed:.3f} км/ч; '
-                f'Потрачено ккал: {self.calories:.3f}.')
+        return (('{names[type]}: ' + f'{self.training_type}; '
+                 + '{names[duration]}: ' + f'{self.duration:.3f} '
+                 + '{unit_measures[h]}.; '
+                 + '{names[distance]}: ' + f'{self.distance:.3f} '
+                 + '{unit_measures[km]}; '
+                 + '{names[mean_speed]}: ' + f'{self.speed:.3f} '
+                 + '{unit_measures[km]}/{unit_measures[h]}; '
+                 + '{names[calories]}: ' + f'{self.calories:.3f}.')
+                .format(names=self.MESSAGE_PHRASE_NAMES,
+                        unit_measures=self.MESSAGE_PHRASE_UNIT_MEASURES))
 
 
 class Training:
@@ -55,7 +64,9 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Redefined in child based on the type."""
-        pass
+        raise NotImplementedError(f'In class "{self.__class__.__name__}" '
+                                  'is not implemented method '
+                                  '"get_spent_calories"')
 
     def show_training_info(self) -> InfoMessage:
         """Saves information about the completed workout in a special class
@@ -107,7 +118,7 @@ class SportsWalking(Training):
         """Calculation spent calories based on the formula
         for sports walking training"""
         calories: float = ((self.CALORIES_WEIGHT_MULTIPLIER * self.weight
-                            + ((self.get_mean_speed() * self.KMH_IN_MSEC)**2
+                            + ((self.get_mean_speed() * self.KMH_IN_MSEC) ** 2
                                / (self.height / self.CM_IN_M))
                             * self.CALORIES_SPEED_HEIGHT_MULTIPLIER
                             * self.weight)
@@ -151,11 +162,15 @@ class Swimming(Training):
 
 def read_package(workout_type: str, data: list) -> Training:
     """Read data and choise training."""
-    type_training = {'WLK': SportsWalking,
-                     'RUN': Running,
-                     'SWM': Swimming}
-    selected_training: Training = type_training[workout_type](*data)
-    return selected_training
+    types_training: dict[str, Type[Training]] = {'WLK': SportsWalking,
+                                                 'RUN': Running,
+                                                 'SWM': Swimming}
+    try:
+        selected_training: Training = types_training[workout_type](*data)
+        return selected_training
+    except KeyError:
+        raise KeyError(f'The specified type "{workout_type}" was not found '
+                       'in the dictionary of training types')
 
 
 def main(training: Training) -> None:
