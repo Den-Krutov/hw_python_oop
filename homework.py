@@ -1,6 +1,6 @@
 """The logic of a working fitness tracker for training
 at running, walking, swimming."""
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 
 @dataclass
@@ -22,11 +22,7 @@ class InfoMessage:
     def get_message(self) -> str:
         """Formats the data and return a str."""
         return (self.MESSAGE_STATIC_TEXT
-                .format(self.training_type,
-                        self.duration,
-                        self.distance,
-                        self.speed,
-                        self.calories))
+                .format(*asdict(self).values()))
 
 
 class Training:
@@ -160,9 +156,8 @@ def read_package(workout_type: str, data: list) -> Training:
                                                  'SWM': Swimming}
     if workout_type in types_training:
         selected_training: Training = types_training[workout_type](*data)
-    else:
-        raise ValueError(f'Unknown type of training "{workout_type}"')
-    return selected_training
+        return selected_training
+    raise ValueError(f'Unknown type of training "{workout_type}"')
 
 
 def main(training: Training) -> None:
