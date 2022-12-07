@@ -1,6 +1,5 @@
 """The logic of a working fitness tracker for training
 at running, walking, swimming."""
-from typing import Type
 from dataclasses import dataclass
 
 
@@ -8,32 +7,26 @@ from dataclasses import dataclass
 class InfoMessage:
     """Stores data about training."""
 
-    MESSAGE_PHRASE_NAMES = {'type': 'Тип тренировки',
-                            'duration': 'Длительность',
-                            'distance': 'Дистанция',
-                            'mean_speed': 'Ср. скорость',
-                            'calories': 'Потрачено ккал'}
-    MESSAGE_PHRASE_UNIT_MEASURES = {'h': 'ч',
-                                    'km': 'км'}
-    DEFAULT_FLOAT_VAR = 0
-    training_type: str = "Unknown"
-    duration: float = DEFAULT_FLOAT_VAR
-    distance: float = DEFAULT_FLOAT_VAR
-    speed: float = DEFAULT_FLOAT_VAR
-    calories: float = DEFAULT_FLOAT_VAR
+    ROUND_FLOAT_VAR = ':.3f'
+    MESSAGE_STATIC_TEXT = ('Тип тренировки: {}; '
+                           f'Длительность: {{{ROUND_FLOAT_VAR}}} ч.; '
+                           f'Дистанция: {{{ROUND_FLOAT_VAR}}} км; '
+                           f'Ср. скорость: {{{ROUND_FLOAT_VAR}}} км/ч; '
+                           f'Потрачено ккал: {{{ROUND_FLOAT_VAR}}}.')
+    training_type: str
+    duration: float
+    distance: float
+    speed: float
+    calories: float
 
     def get_message(self) -> str:
         """Formats the data and return a str."""
-        return (('{names[type]}: ' + f'{self.training_type}; '
-                 + '{names[duration]}: ' + f'{self.duration:.3f} '
-                 + '{unit_measures[h]}.; '
-                 + '{names[distance]}: ' + f'{self.distance:.3f} '
-                 + '{unit_measures[km]}; '
-                 + '{names[mean_speed]}: ' + f'{self.speed:.3f} '
-                 + '{unit_measures[km]}/{unit_measures[h]}; '
-                 + '{names[calories]}: ' + f'{self.calories:.3f}.')
-                .format(names=self.MESSAGE_PHRASE_NAMES,
-                        unit_measures=self.MESSAGE_PHRASE_UNIT_MEASURES))
+        return (self.MESSAGE_STATIC_TEXT
+                .format(self.training_type,
+                        self.duration,
+                        self.distance,
+                        self.speed,
+                        self.calories))
 
 
 class Training:
@@ -162,15 +155,14 @@ class Swimming(Training):
 
 def read_package(workout_type: str, data: list) -> Training:
     """Read data and choise training."""
-    types_training: dict[str, Type[Training]] = {'WLK': SportsWalking,
+    types_training: dict[str, type[Training]] = {'WLK': SportsWalking,
                                                  'RUN': Running,
                                                  'SWM': Swimming}
-    try:
+    if workout_type in types_training:
         selected_training: Training = types_training[workout_type](*data)
-        return selected_training
-    except KeyError:
-        raise KeyError(f'The specified type "{workout_type}" was not found '
-                       'in the dictionary of training types')
+    else:
+        raise ValueError(f'Unknown type of training "{workout_type}"')
+    return selected_training
 
 
 def main(training: Training) -> None:
