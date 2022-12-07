@@ -21,8 +21,8 @@ class InfoMessage:
 
     def get_message(self) -> str:
         """Formats the data and return a str."""
-        return (self.MESSAGE_STATIC_TEXT
-                .format(*asdict(self).values()))
+        message: str = self.MESSAGE_STATIC_TEXT.format(*asdict(self).values())
+        return message
 
 
 class Training:
@@ -166,7 +166,7 @@ def main(training: Training) -> None:
 
 
 if __name__ == '__main__':
-    packages: list[tuple[str, list[int]]] = [
+    packages: list[tuple[str, list[float]]] = [
         ('SWM', [720, 1, 80, 25, 40]),
         ('RUN', [15000, 1, 75]),
         ('WLK', [9000, 1, 75, 180]),
