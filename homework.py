@@ -8,11 +8,11 @@ class InfoMessage:
     """Stores data about training."""
 
     ROUND_FLOAT_VAR = ':.3f'
-    MESSAGE_STATIC_TEXT = ('Тип тренировки: {}; '
-                           f'Длительность: {{{ROUND_FLOAT_VAR}}} ч.; '
-                           f'Дистанция: {{{ROUND_FLOAT_VAR}}} км; '
-                           f'Ср. скорость: {{{ROUND_FLOAT_VAR}}} км/ч; '
-                           f'Потрачено ккал: {{{ROUND_FLOAT_VAR}}}.')
+    MESSAGE_STATIC_TEXT = ('Тип тренировки: {training_type}; '
+                           f'Длительность: {{duration{ROUND_FLOAT_VAR}}} ч.; '
+                           f'Дистанция: {{distance{ROUND_FLOAT_VAR}}} км; '
+                           f'Ср. скорость: {{speed{ROUND_FLOAT_VAR}}} км/ч; '
+                           f'Потрачено ккал: {{calories{ROUND_FLOAT_VAR}}}.')
     training_type: str
     duration: float
     distance: float
@@ -21,7 +21,7 @@ class InfoMessage:
 
     def get_message(self) -> str:
         """Formats the data and return a str."""
-        message: str = self.MESSAGE_STATIC_TEXT.format(*asdict(self).values())
+        message: str = self.MESSAGE_STATIC_TEXT.format(**asdict(self))
         return message
 
 
